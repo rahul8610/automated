@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PredictPro - Market Intelligence. Perfected.</title>
+    <!-- Link to the external premium stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-logo" style="color: var(--accent-blue);">
+            <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="active">PredictPro</a>
+            <a href="/watchlist">Watchlist</a>
+            <a href="/history">History</a>
+        </div>
+        <div class="nav-profile">
+            <i class="fa-regular fa-user-circle"></i>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        
+        <!-- Left Side: Hero Text and Input -->
+        <div class="hero-section">
+            <h1 class="hero-title">Market Intelligence.<br>Perfected.</h1>
+            <p class="hero-subtitle">Introducing PredictPro. Anticipate stock movements with unparalleled AI clarity. Built for the future of investing.</p>
+            
+            <form id="predictForm" class="search-form">
+                <div class="input-wrapper">
+                    <input type="text" id="tickerInput" placeholder="Enter Ticker (e.g. NVDA, AAPL)" required autocomplete="off" oninput="this.value = this.value.toUpperCase()">
+                    <button type="submit" id="predictBtn" class="primary-btn">
+                        <span>Explore Now</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Loading Indicator (Hidden initially) -->
+            <div id="loader" class="loader-container">
+                <div class="spinner"></div>
+                <span class="loading-text">Processing Intelligence...</span>
+            </div>
+
+            <!-- Error Panel -->
+            <div id="errorPanel" class="error-panel" style="display: none;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p id="errorMsg"></p>
+            </div>
+            
+            <!-- Success Toast (for Watchlist addition) -->
+            <div id="toastPanel" class="toast-panel" style="display: none;">
+                <i class="fa-solid fa-circle-check"></i>
+                <p id="toastMsg"></p>
+            </div>
+        </div>
+
+        <!-- Right / Bottom Side: Floating Dashboard Elements (Initially Hidden) -->
+        <div id="dashboardSection" class="dashboard-section fade-in" style="display: none;">
+            
+            <!-- Main Header info -->
+            <div class="widget-header" style="justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="ticker-badge" id="resTicker">TICKER</div>
+                    <div class="company-name" id="resName">Company Name</div>
+                </div>
+                <!-- Dynamic Watchlist Button -->
+                <button type="button" id="addToWatchlistBtn" class="secondary-btn">
+                    <i class="fa-regular fa-star"></i> Watch
+                </button>
+            </div>
+
+            <!-- Simulation Graphic Area -->
+            <div class="simulation-graphic">
+                <div class="price-layer">
+                    <span class="price-label">Forecasted Close</span>
+                    <span class="price-value" id="resPredicted">$0.00</span>
+                    <span class="price-diff" id="resDiff">+0.00 (+0.0%)</span>
+                </div>
+
+                <!-- AI Directive -->
+                <div class="ai-directive-chip" id="resDirectiveChip">
+                    <i class="fa-solid fa-circle-notch fa-spin-pulse"></i>
+                    <span id="resSuggestion">AI ACTION: HOLD</span>
+                </div>
+                
+                <!-- NEW: Interactive Chart injected below the large text in the hero -->
+                <div class="hero-chart-container" style="margin-top: 30px; height: 180px; width: 100%;">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Floating Data Widgets Grid -->
+            <div class="widgets-grid">
+                
+                <!-- Sentiment / RSI Widget -->
+                <div class="widget glass-widget">
+                    <div class="widget-title">Momentum Pulse</div>
+                    <div class="widget-chart-placeholder">
+                        <div class="gauge-value" id="resRsi">0.0</div>
+                    </div>
+                    <div class="widget-footer">
+                        <span class="footer-label">RSI Assessment:</span>
+                        <span class="footer-val" id="resRsiStatus">Neutral</span>
+                    </div>
+                </div>
+
+                <!-- Trend / MACD Widget -->
+                <div class="widget glass-widget">
+                    <div class="widget-title">Trend Intel</div>
+                    <div class="widget-data-list">
+                        <div class="data-row">
+                            <span>MACD Alignment</span>
+                            <strong id="resMacd">0.0000</strong>
+                        </div>
+                        <div class="data-row">
+                            <span>Current Price</span>
+                            <strong id="resCurrent">$0.00</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reasons List -->
+                <div class="widget glass-widget span-two">
+                    <div class="widget-title">AI Confidence Factors</div>
+                    <div class="factors-list" id="resReasons">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let myChart = null;
+        let currentTicker = "";
+
+        // UI Element References
+        const form = document.getElementById('predictForm');
+        const input = document.getElementById('tickerInput');
+        const btn = document.getElementById('predictBtn');
+        const btnText = btn.querySelector('span');
+        const loader = document.getElementById('loader');
+        const errorPanel = document.getElementById('errorPanel');
+        const errorMsg = document.getElementById('errorMsg');
+        const dashboard = document.getElementById('dashboardSection');
+        const toastPanel = document.getElementById('toastPanel');
+        const toastMsg = document.getElementById('toastMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent full page reload
+            
+            const ticker = input.value.trim();
+            if(!ticker) return;
+
+            // Update UI State
+            errorPanel.style.display = 'none';
+            dashboard.style.display = 'none';
+            toastPanel.style.display = 'none';
+            loader.style.display = 'flex';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btnText.innerText = 'Calculating...';
+
+            try {
+                // Fetch data asynchronously from our new REST API
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker: ticker })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to fetch prediction");
+                }
+
+                renderDashboard(data.result);
+                currentTicker = data.result.ticker;
+
+            } catch (err) {
+                errorMsg.innerText = err.message;
+                errorPanel.style.display = 'flex';
+            } finally {
+                // Restore button state
+                loader.style.display = 'none';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btnText.innerText = 'Explore Now';
+            }
+        });
+
+        // Watchlist Button Handler
+        document.getElementById('addToWatchlistBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/watchlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker: currentTicker })
+                });
+                const data = await response.json();
+                
+                if(response.ok) {
+                    toastMsg.innerText = data.message;
+                    toastPanel.style.display = 'flex';
+                    setTimeout(() => toastPanel.style.display = 'none', 3000);
+                }
+            } catch (err) {
+                console.error("Watchlist save failed", err);
+            }
+        });
+
+        function renderDashboard(res) {
+            // Update Text Nodes
+            document.getElementById('resTicker').innerText = res.ticker;
+            document.getElementById('resName').innerText = res.company_name;
+            document.getElementById('resPredicted').innerText = `$${res.predicted_price.toFixed(2)}`;
+            document.getElementById('resCurrent').innerText = `$${res.current_price.toFixed(2)}`;
+            
+            // Diff & Colors
+            const diffEl = document.getElementById('resDiff');
+            diffEl.className = `price-diff ${res.price_diff > 0 ? 'positive' : 'negative'}`;
+            diffEl.innerText = `${res.price_diff > 0 ? '+' : ''}${res.price_diff.toFixed(2)} (${res.price_diff > 0 ? '+' : ''}${res.price_diff_pct.toFixed(2)}%)`;
+
+            // Suggestion Chip
+            const sgChip = document.getElementById('resDirectiveChip');
+            sgChip.className = `ai-directive-chip ${res.suggestion.toLowerCase()}-chip`;
+            document.getElementById('resSuggestion').innerText = `AI ACTION: ${res.suggestion}`;
+
+            // RSI
+            const rsiEl = document.getElementById('resRsi');
+            rsiEl.innerText = res.rsi.toFixed(1);
+            rsiEl.className = `gauge-value ${res.rsi > 70 ? 'red' : res.rsi < 30 ? 'green' : 'blue'}`;
+            document.getElementById('resRsiStatus').innerText = res.rsi > 70 ? 'Overbought' : res.rsi < 30 ? 'Oversold' : 'Neutral';
+
+            // MACD
+            const macdEl = document.getElementById('resMacd');
+            macdEl.innerText = res.macd.toFixed(4);
+            macdEl.className = res.macd > 0 ? 'green' : 'red';
+
+            // Reasons Array
+            const factorsContainer = document.getElementById('resReasons');
+            factorsContainer.innerHTML = '';
+            res.reasons.forEach(reason => {
+                const div = document.createElement('div');
+                div.className = 'factor-item';
+                div.innerHTML = `<i class="fa-solid fa-check-circle green-icon"></i><span>${reason}</span>`;
+                factorsContainer.appendChild(div);
+            });
+
+            // Render Interactive Chart using Chart.js
+            renderChart(res.chart_labels, res.chart_data);
+
+            // Finally, fade in the dashboard
+            dashboard.style.display = 'flex';
+        }
+
+        function renderChart(labels, dataPoints) {
+            const ctx = document.getElementById('historicalChart').getContext('2d');
+            
+            // Destroy previous chart instance if it exists to avoid overlapping canvases
+            if(myChart) {
+                myChart.destroy();
+            }
+
+            // Create gradient for the line area
+            let gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(0, 102, 204, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 102, 204, 0)');
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Closing Price',
+                        data: dataPoints,
+                        borderColor: '#0066cc',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    }
+                }
+            });
+        }
+
+        // Auto-run if passed via URL (e.g. from Watchlist)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const passedTicker = urlParams.get('ticker');
+            if (passedTicker) {
+                input.value = passedTicker.toUpperCase();
+                // We use requestAnimationFrame to make sure the UI is ready
+                requestAnimationFrame(() => {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                });
+            }
+        });
+    </script>
+</body>
+</html>

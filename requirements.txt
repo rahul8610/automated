@@ -1,4 +1,7 @@
 Flask
 pandas
-scikit-learn
+xgboost
+ta
 yfinance
+peewee
+joblib
