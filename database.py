@@ -18,6 +18,7 @@ class PredictionHistory(BaseModel):
     date_run = DateTimeField(default=datetime.now)
     current_price = FloatField()
     predicted_price = FloatField()
+    currency = CharField(default="$")
     ai_suggestion = CharField()
     
 def init_db():

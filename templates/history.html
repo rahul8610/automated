@@ -23,8 +23,17 @@
     </nav>
 
     <main class="page-container fade-in">
-        <h1 class="page-title">Analysis History</h1>
-        <p class="page-subtitle">Your past 50 AI predictions</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+            <div>
+                <h1 class="page-title" style="margin-bottom: 5px;">Analysis History</h1>
+                <p class="page-subtitle" style="margin-bottom: 0;">Your past 50 AI predictions</p>
+            </div>
+            {% if history %}
+            <button id="clearHistoryBtn" class="secondary-btn" style="color: var(--danger); border-color: rgba(255,59,48,0.3);">
+                <i class="fa-solid fa-trash-can"></i> Clear History
+            </button>
+            {% endif %}
+        </div>
 
         {% if history %}
             <div class="grid-table history-grid">
@@ -40,9 +49,9 @@
                     <div class="grid-row glass-widget">
                         <div style="color: var(--text-secondary); font-size: 0.9rem;">{{ record.date }}</div>
                         <div style="font-weight: 700;">{{ record.ticker }}</div>
-                        <div>${{ "%.2f"|format(record.current_price) }}</div>
+                        <div>{{ record.currency }}{{ "%.2f"|format(record.current_price) }}</div>
                         <div style="font-weight: 600;" class="{{ 'positive' if record.predicted_price > record.current_price else 'negative' }}">
-                            ${{ "%.2f"|format(record.predicted_price) }}
+                            {{ record.currency }}{{ "%.2f"|format(record.predicted_price) }}
                         </div>
                         <div>
                             <span class="history-chip {{ record.suggestion | lower }}-chip">
@@ -60,5 +69,25 @@
             </div>
         {% endif %}
     </main>
+
+    <script>
+        const clearBtn = document.getElementById('clearHistoryBtn');
+        if(clearBtn) {
+            clearBtn.addEventListener('click', async () => {
+                if(confirm("Are you sure you want to permanently delete your prediction history?")) {
+                    try {
+                        const res = await fetch('/api/history/clear', { method: 'POST' });
+                        if(res.ok) {
+                            window.location.reload();
+                        } else {
+                            alert("Failed to clear history.");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

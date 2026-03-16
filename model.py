@@ -118,6 +118,20 @@ def fetch_and_train(ticker):
         if current_macd > 0: suggestion_reasons.append("MACD shows bullish momentum")
         else: suggestion_reasons.append("MACD shows bearish momentum")
 
+        # Determine Currency Symbol from Yahoo Finance Info
+        currency_code = stock.info.get('currency', 'USD').upper()
+        # Map some common currency codes to symbols (defaults to raw code if not found)
+        currency_symbols = {
+            'USD': '$',
+            'INR': '₹',
+            'EUR': '€',
+            'GBP': '£',
+            'JPY': '¥',
+            'CAD': 'C$',
+            'AUD': 'A$'
+        }
+        currency_sym = currency_symbols.get(currency_code, currency_code + " ")
+
         # 5. Extract trailing 30 days for Chart.js
         last_30_days = latest_data.tail(30)
         chart_labels = last_30_days.index.strftime('%m-%d').tolist()
@@ -129,6 +143,7 @@ def fetch_and_train(ticker):
             ticker=ticker,
             current_price=round(current_price, 2),
             predicted_price=round(float(prediction), 2),
+            currency=currency_sym,
             ai_suggestion=suggestion
         )
         db.close()
@@ -136,6 +151,7 @@ def fetch_and_train(ticker):
         return {
             "ticker": ticker,
             "company_name": stock.info.get('longName', ticker),
+            "currency": currency_sym,
             "current_price": round(current_price, 2),
             "predicted_price": round(float(prediction), 2),
             "price_diff": round(float(prediction - current_price), 2),

@@ -36,6 +36,7 @@ def history():
             "date": r.date_run.strftime('%Y-%m-%d %H:%M'),
             "current_price": r.current_price,
             "predicted_price": r.predicted_price,
+            "currency": getattr(r, 'currency', '$'),
             "suggestion": r.ai_suggestion
         } for r in records
     ]
@@ -70,6 +71,16 @@ def add_to_watchlist():
         WatchlistItem.get_or_create(ticker=ticker.upper())
         db.close()
         return jsonify({"success": True, "message": f"{ticker.upper()} added to Watchlist!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/history/clear', methods=['POST'])
+def clear_history():
+    try:
+        db.connect(reuse_if_open=True)
+        PredictionHistory.delete().execute()
+        db.close()
+        return jsonify({"success": True, "message": "History cleared successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
