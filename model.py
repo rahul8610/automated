@@ -186,7 +186,6 @@ if __name__ == '__main__':
     if os.path.exists(test_model_path):
         os.remove(test_model_path)
     
-    print(f"--- Forcing complete retraining for {ticker} ---\n")
     result, error = fetch_and_train(ticker)
     if error:
         print(f"ERROR: {error}")
