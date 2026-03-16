@@ -232,7 +232,8 @@
             
             // Diff & Colors
             const diffEl = document.getElementById('resDiff');
-            diffEl.className = `price-diff ${res.price_diff > 0 ? 'positive' : 'negative'}`;
+            const diffClass = res.price_diff > 0 ? 'positive' : 'negative';
+            diffEl.className = `price-diff ${diffClass}`;
             diffEl.innerText = `${res.price_diff > 0 ? '+' : ''}${res.price_diff.toFixed(2)} (${res.price_diff > 0 ? '+' : ''}${res.price_diff_pct.toFixed(2)}%)`;
 
             // Suggestion Chip
@@ -243,8 +244,10 @@
             // RSI
             const rsiEl = document.getElementById('resRsi');
             rsiEl.innerText = res.rsi.toFixed(1);
-            rsiEl.className = `gauge-value ${res.rsi > 70 ? 'red' : res.rsi < 30 ? 'green' : 'blue'}`;
-            document.getElementById('resRsiStatus').innerText = res.rsi > 70 ? 'Overbought' : res.rsi < 30 ? 'Oversold' : 'Neutral';
+            const rsiGaugeClass = res.rsi > 70 ? 'red' : res.rsi < 30 ? 'green' : 'blue';
+            rsiEl.className = `gauge-value ${rsiGaugeClass}`;
+            const rsiStatusText = res.rsi > 70 ? 'Overbought' : res.rsi < 30 ? 'Oversold' : 'Neutral';
+            document.getElementById('resRsiStatus').innerText = rsiStatusText;
 
             // MACD
             const macdEl = document.getElementById('resMacd');

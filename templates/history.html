@@ -36,11 +36,12 @@
                     <div>Action</div>
                 </div>
                 {% for record in history %}
+                    {% set price_color = 'var(--success)' if record.predicted_price > record.current_price else 'var(--danger)' %}
                     <div class="grid-row glass-widget">
                         <div style="color: var(--text-secondary); font-size: 0.9rem;">{{ record.date }}</div>
                         <div style="font-weight: 700;">{{ record.ticker }}</div>
                         <div>${{ "%.2f"|format(record.current_price) }}</div>
-                        <div style="font-weight: 600; color: {{ 'var(--success)' if record.predicted_price > record.current_price else 'var(--danger)' }}">
+                        <div style="font-weight: 600;" class="{{ 'positive' if record.predicted_price > record.current_price else 'negative' }}">
                             ${{ "%.2f"|format(record.predicted_price) }}
                         </div>
                         <div>
