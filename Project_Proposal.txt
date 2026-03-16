@@ -1,0 +1,125 @@
+Detailed Project Proposal
+
+Title: AI-Driven Stock Market Prediction on Resource-Constrained Systems
+
+
+1. Brief Review of Work Done in the Area
+
+Stock market prediction has been an important area of research for many years because financial markets are complex, dynamic, and influenced by a wide range of economic factors. Earlier approaches mainly relied on statistical techniques such as regression analysis and time-series models to study historical price movements. While these methods were useful for identifying general trends, they often struggled to capture nonlinear relationships and sudden fluctuations commonly observed in financial markets.
+
+With the development of machine learning techniques, researchers have started applying algorithms such as Decision Trees, Random Forest, Support Vector Machines, and Gradient Boosting models for financial forecasting. These approaches can analyze multiple features simultaneously and are capable of detecting hidden patterns within large financial datasets.
+
+Another important development is the integration of machine learning with interactive analytical platforms that allow users to visualize stock trends and generate predictions. Such systems combine financial data retrieval, predictive models, and visualization tools into a single platform. However, many existing solutions require high-performance hardware or cloud-based infrastructure, which may not be accessible in all environments.
+
+In this project, I aim to develop PredictPro, an AI-driven stock market prediction application designed to operate efficiently on resource-constrained systems. The system integrates financial data collection, technical indicator analysis, machine learning prediction, and interactive visualization into a single lightweight application. The focus of this work is to demonstrate that meaningful financial predictions can be generated even using limited computational resources.
+
+2. Research Gap and Novelty of the Proposed Work
+
+While numerous applications and research projects exist for stock market prediction, they primarily fall into two categories: complex, resource-heavy models that require extensive cloud computing power, or overly simplistic, disconnected tools that lack real-time data integration and a cohesive user experience. 
+
+The primary research gap this project addresses is the lack of open-source, lightweight, and integrated forecasting solutions that combine both technical indicator generation (such as RSI, MACD, and Bollinger Bands) and advanced machine learning (XGBoost regression) without requiring significant computational overhead. 
+
+The novelty of PredictPro lies in its architecture: it employs intelligent model caching via Joblib serialization, meaning the computationally expensive training phase is executed only once per stock ticker. Subsequent predictions run instantly, allowing the application to function seamlessly on standard, resource-constrained personal computers. Furthermore, PredictPro uniquely bridges the gap between raw data analysis and actionable insights by providing automated, context-aware stock suggestions (BUY/HOLD/SELL) natively alongside responsive data visualizations, making AI-driven financial analysis highly accessible.
+
+3. Project Goals
+
+The primary objectives of this project are:
+
+* To design and develop a lightweight AI-based system capable of predicting short-term stock price movements using historical financial data.
+
+* To collect stock market data automatically through APIs such as Yahoo Finance, enabling the system to analyze real-world market conditions.
+
+* To compute commonly used technical indicators including Relative Strength Index (RSI), Moving Average Convergence Divergence (MACD), Bollinger Bands, and Exponential Moving Averages.
+
+* To train a machine learning model capable of forecasting the next trading day's closing price using historical data and technical indicators.
+
+* To create a web-based dashboard that allows users to visualize stock price trends and access prediction results.
+
+* To maintain a database that stores watchlists and historical prediction records for monitoring model performance.
+
+4. Plan of Work
+
+The development of this project will be carried out in several stages.
+
+Stage 1 - Data Collection
+The first step involves collecting historical stock market data using the Yahoo Finance API. Approximately five years of financial data will be retrieved for selected stock tickers. The dataset will include attributes such as opening price, closing price, highest price, lowest price, and trading volume.
+
+Stage 2 - Data Cleaning and Preprocessing
+Once the data is collected, preprocessing steps will be applied to remove missing values and ensure consistency in the dataset. This stage prepares the data for feature generation and model training.
+
+Stage 3 - Feature Engineering
+Technical indicators such as RSI, MACD, Bollinger Bands, and Exponential Moving Averages will be calculated from the financial data. These indicators provide insights into market momentum and price trends.
+
+Stage 4 - Model Development
+In this stage, a machine learning model based on XGBoost regression will be developed. The model will be trained using historical data and technical indicators to learn relationships between past trends and future price movements.
+
+Stage 5 - Model Evaluation
+The trained model will be evaluated using performance metrics such as Mean Squared Error (MSE) and Root Mean Squared Error (RMSE). These metrics help measure how accurately the model predicts stock prices.
+
+Stage 6 - Web Application Integration
+Finally, the machine learning model will be integrated into a web-based application developed using the Flask framework. The application will provide an interface where users can enter stock tickers and view predictions along with visual charts representing historical market data.
+
+5. Methodology
+
+The methodology for this project includes the following steps:
+
+Data Acquisition
+Historical stock data will be obtained through the yfinance API, which provides access to financial information from Yahoo Finance. The dataset will include multiple years of market activity.
+
+Feature Engineering
+Technical indicators such as RSI, MACD, Bollinger Bands, and Exponential Moving Averages will be computed from the collected financial data. These indicators help represent important market characteristics such as momentum, volatility, and trend direction.
+
+Machine Learning Model
+The prediction model used in this project is XGBoost Regression, which is widely known for its efficiency and strong performance on structured datasets. The model will analyze relationships between historical indicators and future stock prices.
+
+Model Caching
+To improve performance, trained models will be stored using Joblib serialization. When a prediction is requested for a previously analyzed stock, the stored model can be loaded directly without retraining.
+
+Visualization
+Prediction results and historical price movements will be displayed using interactive charts generated through Chart.js. This allows users to visually interpret trends and predictions.
+
+Prediction Tracking
+Each prediction generated by the system will be recorded in a database. This enables the tracking of model accuracy and allows comparison between predicted and actual market prices.
+
+6. Expected Outcome and Milestones
+
+Expected Outcomes
+At the completion of this project, I expect to develop a fully functional AI-based stock prediction web application.
+
+The system will be able to collect historical financial data, calculate technical indicators, train machine learning models, and generate predictions for short-term stock price movements.
+
+An interactive dashboard will allow users to analyze stock performance visually and access prediction insights generated by the model.
+
+The project will also demonstrate that machine learning-based financial forecasting systems can be implemented effectively on resource-constrained hardware environments.
+
+Project Milestones
+
+| Phase   | Activity                                    | Duration |
+| ------- | ------------------------------------------- | -------- |
+| Phase 1 | Data collection and preprocessing           | Month 1  |
+| Phase 2 | Feature engineering and dataset preparation | Month 2  |
+| Phase 3 | Machine learning model development          | Month 3  |
+| Phase 4 | Web application integration and testing     | Month 4  |
+| Phase 5 | Documentation and report preparation        | Month 5  |
+
+7. Facilities, Instruments, Funding and Staff
+
+This project will be implemented using commonly available computing resources and open-source software tools.
+
+The development will be carried out on a personal computer with limited hardware resources, demonstrating the feasibility of running machine learning applications on resource-constrained systems.
+
+The technologies used in this project include Python for programming, Flask for web development, XGBoost and Scikit-learn for machine learning, Pandas and NumPy for data analysis, and Chart.js for visualization. SQLite will be used as a lightweight database for managing user watchlists and prediction history.
+
+The work will be carried out by me as the student researcher under the supervision of a faculty guide. Since the project relies primarily on open-source tools and publicly available financial datasets, no additional funding will be required.
+
+References
+
+[1] T. Chen and C. Guestrin, "XGBoost: A Scalable Tree Boosting System," Proceedings of the ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2016.
+
+[2] S. Patel, M. Shah, P. Thakkar, and K. Kotecha, "Predicting Stock Market Index Using Fusion of Machine Learning Techniques," Expert Systems with Applications, vol. 42, pp. 2162-2172, 2015.
+
+[3] L. Breiman, "Random Forests," Machine Learning, vol. 45, pp. 5-32, 2001.
+
+[4] J. Brownlee, Machine Learning Mastery with Python, Machine Learning Mastery, 2016.
+
+[5] Yahoo Finance API Documentation – yfinance Python Library.
