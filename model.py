@@ -45,8 +45,10 @@ def fetch_and_train(ticker):
         df['BB_High'] = bb.bollinger_hband()
         df['BB_Low'] = bb.bollinger_lband()
         
-        # Target Variable: Next Day's Close
-        df['Target_Next_Close'] = df['Close'].shift(-1)
+        # Target Variable: Next Day's Price Difference
+        # Instead of predicting absolute price (which trees can't extrapolate well),
+        # predict the change from today's close.
+        df['Target_Diff'] = df['Close'].shift(-1) - df['Close']
         
         df_clean = df.dropna()
         if len(df_clean) < 50:
@@ -63,7 +65,7 @@ def fetch_and_train(ticker):
         else:
             # Full training cost only incurred once per ticker
             X = df_clean[features]
-            y = df_clean['Target_Next_Close']
+            y = df_clean['Target_Diff']
             
             # Split data for training/testing to get metrics (80% train, 20% test)
             split_idx = int(len(X) * 0.8)
@@ -74,29 +76,36 @@ def fetch_and_train(ticker):
             model.fit(X_train, y_train)
             
             # Print performance metrics to terminal
-            y_pred = model.predict(X_test)
-            mse = mean_squared_error(y_test, y_pred)
-            rmse = np.sqrt(mse)
-            mae = mean_absolute_error(y_test, y_pred)
-            r2 = r2_score(y_test, y_pred)
+            y_pred_diff = model.predict(X_test)
             
-            print(f"\n[{ticker}] MODEL RETRAINED - PERFORMANCE METRICS (on 20% holdout test data):")
-            print(f"[{ticker}] -> MSE (Mean Squared Error):      {mse:.4f}")
-            print(f"[{ticker}] -> RMSE (Root Mean Squared Error): {rmse:.4f}")
-            print(f"[{ticker}] -> MAE (Mean Absolute Error):    {mae:.4f}")
-            print(f"[{ticker}] -> R-Squared (Accuracy Score):   {r2:.4f} ({(r2*100):.2f}%)\n")
+            # Convert predicted differences back to absolute prices for realistic metrics
+            y_test_abs = X_test['Close'] + y_test
+            y_pred_abs = X_test['Close'] + y_pred_diff
+            
+            mse = mean_squared_error(y_test_abs, y_pred_abs)
+            rmse = np.sqrt(mse)
+            mae = mean_absolute_error(y_test_abs, y_pred_abs)
+            r2 = r2_score(y_test_abs, y_pred_abs)
+            
+            print(f"\nMODEL RETRAINED - PERFORMANCE METRICS (on 20% holdout test data):")
+            print(f"-> MSE (Mean Squared Error):      {mse:.4f}")
+            print(f"-> RMSE (Root Mean Squared Error): {rmse:.4f}")
+            print(f"-> MAE (Mean Absolute Error):    {mae:.4f}")
+            print(f"-> R-Squared (Accuracy Score):   {r2:.4f} ({(r2*100):.2f}%)\n")
             
             # Train again on ALL data before saving for production use
             model.fit(X, y)
             joblib.dump(model, model_path)
             latest_data = df.copy()
+            print(f"Model trained successfully and saved to cache!\n")
         
         # 4. Predict
         latest_X = latest_data[features].iloc[-1:]
-        prediction = model.predict(latest_X)[0]
-        
-        # Values for UI
         current_price = latest_data['Close'].iloc[-1]
+        
+        # Add the predicted difference to the current price
+        prediction_diff = model.predict(latest_X)[0]
+        prediction = current_price + prediction_diff
         current_rsi = latest_data['RSI'].iloc[-1]
         current_macd = latest_data['MACD'].iloc[-1]
         
@@ -167,3 +176,18 @@ def fetch_and_train(ticker):
         
     except Exception as e:
         return None, f"An error occurred while analyzing '{ticker}': {str(e)}"
+
+if __name__ == '__main__':
+    import sys
+    ticker = sys.argv[1] if len(sys.argv) > 1 else 'NVDA'
+    
+    # Use absolute path to delete cache regardless of where the script is run from
+    test_model_path = os.path.join(MODELS_DIR, f"{ticker}_xgb.pkl")
+    if os.path.exists(test_model_path):
+        os.remove(test_model_path)
+    
+    print(f"--- Forcing complete retraining for {ticker} ---\n")
+    result, error = fetch_and_train(ticker)
+    if error:
+        print(f"ERROR: {error}")
+
