@@ -6,6 +6,8 @@ from datetime import datetime
 import warnings
 import os
 import joblib
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import numpy as np
 from database import PredictionHistory, db
 
 # Suppress pandas FutureWarnings
@@ -63,7 +65,28 @@ def fetch_and_train(ticker):
             X = df_clean[features]
             y = df_clean['Target_Next_Close']
             
+            # Split data for training/testing to get metrics (80% train, 20% test)
+            split_idx = int(len(X) * 0.8)
+            X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
+            y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+            
             model = xgb.XGBRegressor(n_estimators=150, learning_rate=0.05, max_depth=5, objective='reg:squarederror')
+            model.fit(X_train, y_train)
+            
+            # Print performance metrics to terminal
+            y_pred = model.predict(X_test)
+            mse = mean_squared_error(y_test, y_pred)
+            rmse = np.sqrt(mse)
+            mae = mean_absolute_error(y_test, y_pred)
+            r2 = r2_score(y_test, y_pred)
+            
+            print(f"\n[{ticker}] MODEL RETRAINED - PERFORMANCE METRICS (on 20% holdout test data):")
+            print(f"[{ticker}] -> MSE (Mean Squared Error):      {mse:.4f}")
+            print(f"[{ticker}] -> RMSE (Root Mean Squared Error): {rmse:.4f}")
+            print(f"[{ticker}] -> MAE (Mean Absolute Error):    {mae:.4f}")
+            print(f"[{ticker}] -> R-Squared (Accuracy Score):   {r2:.4f} ({(r2*100):.2f}%)\n")
+            
+            # Train again on ALL data before saving for production use
             model.fit(X, y)
             joblib.dump(model, model_path)
             latest_data = df.copy()
