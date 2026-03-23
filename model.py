@@ -66,7 +66,7 @@ CLASSIFIERS = {
     'Expert Voting Ensemble': voting_clf
 }
 
-def fetch_and_train(ticker, fast_mode=False):
+def fetch_and_train(ticker, fast_mode=False, capital=100000.0, period="5y"):
     """
     Fetches stock data, applies advanced stationary feature engineering,
     trains models to predict percentage returns, automatically selects the best, 
@@ -74,11 +74,11 @@ def fetch_and_train(ticker, fast_mode=False):
     """
     ticker = ticker.upper()
     try:
-        scaler_path = os.path.join(MODELS_DIR, f"{ticker}_scaler.pkl")
-        scaler_clf_path = os.path.join(MODELS_DIR, f"{ticker}_scaler_clf.pkl")
-        best_regressor_path = os.path.join(MODELS_DIR, f"{ticker}_best_regressor.pkl")
-        best_classifier_path = os.path.join(MODELS_DIR, f"{ticker}_best_classifier.pkl")
-        clf_metrics_path = os.path.join(MODELS_DIR, f"{ticker}_clf_metrics.pkl")
+        scaler_path = os.path.join(MODELS_DIR, f"{ticker}_{period}_scaler.pkl")
+        scaler_clf_path = os.path.join(MODELS_DIR, f"{ticker}_{period}_scaler_clf.pkl")
+        best_regressor_path = os.path.join(MODELS_DIR, f"{ticker}_{period}_best_regressor.pkl")
+        best_classifier_path = os.path.join(MODELS_DIR, f"{ticker}_{period}_best_classifier.pkl")
+        clf_metrics_path = os.path.join(MODELS_DIR, f"{ticker}_{period}_clf_metrics.pkl")
         
         # 1. Fetch data
         stock = yf.Ticker(ticker)
@@ -383,7 +383,7 @@ def fetch_and_train(ticker, fast_mode=False):
                 scaler_clf=scaler_clf,
                 features_clf=features_clf,
                 ticker=ticker,
-                initial_capital=100000.0
+                initial_capital=capital
             )
             
         return {
@@ -423,7 +423,7 @@ if __name__ == '__main__':
     
     # We clear cache to force a full re-train test
     for ext in ['_best_regressor.pkl', '_best_classifier.pkl', '_scaler.pkl', '_scaler_clf.pkl', '_clf_metrics.pkl']:
-        p = os.path.join(MODELS_DIR, f"{ticker}{ext}")
+        p = os.path.join(MODELS_DIR, f"{ticker}_5y{ext}")
         if os.path.exists(p): os.remove(p)
         
     result, error = fetch_and_train(ticker)

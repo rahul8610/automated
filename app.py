@@ -49,11 +49,13 @@ def history():
 def api_predict():
     data = request.get_json()
     ticker = data.get('ticker', '').strip()
+    capital = data.get('capital', 100000)
+    period = data.get('period', '5y')
     
     if not ticker:
         return jsonify({"error": "Ticker is required"}), 400
         
-    res, err = fetch_and_train(ticker)
+    res, err = fetch_and_train(ticker, capital=float(capital), period=period)
     if err:
         return jsonify({"error": err}), 500
     
@@ -63,11 +65,13 @@ def api_predict():
 def api_live_data():
     data = request.get_json()
     ticker = data.get('ticker', '').strip()
+    capital = data.get('capital', 100000)
+    period = data.get('period', '5y')
     
     if not ticker:
         return jsonify({"error": "Ticker is required"}), 400
         
-    res, err = fetch_and_train(ticker, fast_mode=True)
+    res, err = fetch_and_train(ticker, fast_mode=True, capital=float(capital), period=period)
     if err:
         return jsonify({"error": err}), 500
     

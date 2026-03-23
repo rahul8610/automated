@@ -108,6 +108,7 @@ def run_backtest(df, classifier, scaler_clf, features_clf, ticker, initial_capit
         
     total_pnl = capital - initial_capital
     win_rate = (winning_trades / trades * 100) if trades > 0 else 0.0
+    roi = (total_pnl / initial_capital * 100) if initial_capital > 0 else 0.0
     
     # Save to Database
     db.connect(reuse_if_open=True)
@@ -127,6 +128,7 @@ def run_backtest(df, classifier, scaler_clf, features_clf, ticker, initial_capit
         "final_capital": round(capital, 2),
         "total_pnl": round(total_pnl, 2),
         "win_rate": round(win_rate, 2),
+        "roi": round(roi, 2),
         "total_trades": trades,
         "max_drawdown": round(max_drawdown * 100, 2),
         "equity_curve": equity_curve
