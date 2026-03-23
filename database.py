@@ -20,8 +20,17 @@ class PredictionHistory(BaseModel):
     predicted_price = FloatField()
     currency = CharField(default="$")
     ai_suggestion = CharField()
+    model_used = CharField(default="XGBoost")
+
+class ModelPerformance(BaseModel):
+    ticker = CharField()
+    model_name = CharField()
+    r2_score = FloatField()
+    rmse = FloatField()
+    mae = FloatField()
+    timestamp = DateTimeField(default=datetime.now)
     
 def init_db():
     db.connect()
-    db.create_tables([WatchlistItem, PredictionHistory], safe=True)
+    db.create_tables([WatchlistItem, PredictionHistory, ModelPerformance], safe=True)
     db.close()

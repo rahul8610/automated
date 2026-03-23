@@ -5,3 +5,4 @@ ta
 yfinance
 peewee
 joblib
+scikit-learn

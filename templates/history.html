@@ -42,6 +42,7 @@
                     <div>Ticker</div>
                     <div>Price at Time</div>
                     <div>AI Forecast</div>
+                    <div>Model</div>
                     <div>Action</div>
                 </div>
                 {% for record in history %}
@@ -52,6 +53,9 @@
                         <div>{{ record.currency }}{{ "%.2f"|format(record.current_price) }}</div>
                         <div style="font-weight: 600;" class="{{ 'positive' if record.predicted_price > record.current_price else 'negative' }}">
                             {{ record.currency }}{{ "%.2f"|format(record.predicted_price) }}
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">
+                            {{ record.model_used }}
                         </div>
                         <div>
                             <span class="history-chip {{ record.suggestion | lower }}-chip">

@@ -484,7 +484,7 @@ input[type=text] {
 }
 
 .history-grid .grid-header {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr 1fr;
 }
 
 .grid-row {
@@ -496,7 +496,7 @@ input[type=text] {
 }
 
 .history-grid .grid-row {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr 1fr;
 }
 
 .grid-row:hover {

@@ -139,12 +139,42 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Model Comparison Engine -->
+            <div class="glass-widget" style="margin-top: 10px;">
+                <div class="widget-title">Model Comparison Engine</div>
+                <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                    
+                    <!-- Chart Area -->
+                    <div style="flex: 1; min-width: 300px; height: 250px;">
+                        <canvas id="r2ComparisonChart"></canvas>
+                    </div>
+
+                    <!-- Table Area -->
+                    <div style="flex: 1; min-width: 350px;">
+                        <table class="comparison-table" id="comparisonTable">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>R² Score</th>
+                                    <th>RMSE</th>
+                                    <th>MAE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTableBody">
+                                <!-- JS injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </main>
 
     <script>
         let myChart = null;
+        let r2Chart = null;
         let currentTicker = "";
 
         // UI Element References
@@ -225,7 +255,7 @@
 
         function renderDashboard(res) {
             // Update Text Nodes
-            document.getElementById('resTicker').innerText = res.ticker;
+            document.getElementById('resTicker').innerHTML = res.ticker + ` <span style="font-size:0.6rem; opacity:0.8; margin-left:5px; font-weight:normal;">via ${res.best_model}</span>`;
             document.getElementById('resName').innerText = res.company_name;
             document.getElementById('resPredicted').innerText = `${res.currency}${res.predicted_price.toFixed(2)}`;
             document.getElementById('resCurrent').innerText = `${res.currency}${res.current_price.toFixed(2)}`;
@@ -267,8 +297,68 @@
             // Render Interactive Chart using Chart.js
             renderChart(res.chart_labels, res.chart_data);
 
+            // Render Comparison Engine
+            renderComparisonEngine(res.comparison_metrics, res.best_model);
+
             // Finally, fade in the dashboard
             dashboard.style.display = 'flex';
+        }
+
+        function renderComparisonEngine(metrics, bestModel) {
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = '';
+            
+            const labels = [];
+            const r2Data = [];
+            const backgroundColors = [];
+
+            metrics.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                if (m.name === bestModel) {
+                    tr.className = 'best-model-row';
+                }
+                tr.innerHTML = `
+                    <td>${m.name} ${m.name === bestModel ? '<i class="fa-solid fa-star" style="color:var(--warning);font-size:0.8rem;"></i>' : ''}</td>
+                    <td style="font-weight:600; color:${m.r2 > 0.8 ? 'var(--success)' : m.r2 > 0 ? 'var(--text-primary)' : 'var(--danger)'}">${m.r2.toFixed(4)}</td>
+                    <td>${m.rmse.toFixed(2)}</td>
+                    <td>${m.mae.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                // Top 6 models for chart (metrics is sorted by R2 descending)
+                if (idx < 6) {
+                    labels.push(m.name.replace(" Regression", "").replace(" Regressor", "").replace(" Classifier", ""));
+                    r2Data.push(m.r2);
+                    backgroundColors.push(m.name === bestModel ? '#34c759' : '#0066cc');
+                }
+            });
+
+            const ctx = document.getElementById('r2ComparisonChart').getContext('2d');
+            if (r2Chart) r2Chart.destroy();
+            
+            r2Chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'R² Score (Higher is better)',
+                        data: r2Data,
+                        backgroundColor: backgroundColors,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false }, 
+                        tooltip: { callbacks: { label: (ctx) => 'R²: ' + ctx.raw.toFixed(4) } } 
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
         }
 
         function renderChart(labels, dataPoints) {

@@ -37,7 +37,8 @@ def history():
             "current_price": r.current_price,
             "predicted_price": r.predicted_price,
             "currency": getattr(r, 'currency', '$'),
-            "suggestion": r.ai_suggestion
+            "suggestion": r.ai_suggestion,
+            "model_used": getattr(r, 'model_used', 'XGBoost')
         } for r in records
     ]
     db.close()
