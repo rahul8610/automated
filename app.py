@@ -59,6 +59,20 @@ def api_predict():
     
     return jsonify({"result": res})
 
+@app.route('/api/live_data', methods=['POST'])
+def api_live_data():
+    data = request.get_json()
+    ticker = data.get('ticker', '').strip()
+    
+    if not ticker:
+        return jsonify({"error": "Ticker is required"}), 400
+        
+    res, err = fetch_and_train(ticker, fast_mode=True)
+    if err:
+        return jsonify({"error": err}), 500
+    
+    return jsonify({"result": res})
+
 @app.route('/api/watchlist', methods=['POST'])
 def add_to_watchlist():
     data = request.get_json()

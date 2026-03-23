@@ -20,6 +20,8 @@ class PredictionHistory(BaseModel):
     predicted_price = FloatField()
     currency = CharField(default="$")
     ai_suggestion = CharField()
+    confidence_score = FloatField(null=True)
+    strategy_explanation = TextField(null=True)
     model_used = CharField(default="XGBoost")
 
 class ModelPerformance(BaseModel):
@@ -30,7 +32,17 @@ class ModelPerformance(BaseModel):
     mae = FloatField()
     timestamp = DateTimeField(default=datetime.now)
     
+class BacktestSummary(BaseModel):
+    ticker = CharField()
+    initial_capital = FloatField()
+    final_capital = FloatField()
+    total_pnl = FloatField()
+    win_rate = FloatField()
+    total_trades = IntegerField()
+    max_drawdown = FloatField()
+    timestamp = DateTimeField(default=datetime.now)
+
 def init_db():
-    db.connect()
-    db.create_tables([WatchlistItem, PredictionHistory, ModelPerformance], safe=True)
+    db.connect(reuse_if_open=True)
+    db.create_tables([WatchlistItem, PredictionHistory, ModelPerformance, BacktestSummary], safe=True)
     db.close()
