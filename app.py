@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify
 from model import fetch_and_train
 from database import init_db, WatchlistItem, PredictionHistory, db
 import os
+import mimetypes
+mimetypes.add_type('text/css', '.css')
 
 app = Flask(__name__)
 
