@@ -1,0 +1,67 @@
+## How to Run the PredictPro Project
+
+### Prerequisites
+1. **Python 3.9+** installed and added to your system PATH.
+2. **Git** (optional, for cloning the repository).
+3. Internet connection (required for fetching stock data via yfinance).
+
+### 1. Clone / Locate the Project
+If you haven't already, place the project folder at:
+```
+C:\RAHUL\autom\automated
+```
+The main entry point is `model.py`.
+
+### 2. Install Required Packages
+Open a PowerShell terminal and navigate to the project directory:
+```powershell
+cd C:\RAHUL\autom\automated
+```
+Install the dependencies listed in `requirements.txt`:
+```powershell
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+> **Tip:** If you encounter permission issues, run PowerShell as Administrator or add the `--user` flag.
+
+### 3. Initialise the Database (SQLite)
+The project uses a SQLite database via Peewee. The first run will automatically create the required tables (`PredictionHistory` and `ModelPerformance`). No manual steps are needed.
+
+### 4. (Optional) Clear Cached Models
+If you want to force a fresh training run, delete the cached model files. The script provides a helper that does this automatically, but you can also manually remove them:
+```powershell
+# Example for ticker NVDA
+Remove-Item "C:\RAHUL\autom\automated\models\NVDA_5y_best_regressor.pkl" -ErrorAction SilentlyContinue
+Remove-Item "C:\RAHUL\autom\automated\models\NVDA_5y_best_classifier.pkl" -ErrorAction SilentlyContinue
+Remove-Item "C:\RAHUL\autom\automated\models\NVDA_5y_scaler.pkl" -ErrorAction SilentlyContinue
+Remove-Item "C:\RAHUL\autom\automated\models\NVDA_5y_scaler_clf.pkl" -ErrorAction SilentlyContinue
+Remove-Item "C:\RAHUL\autom\automated\models\NVDA_5y_clf_metrics.pkl" -ErrorAction SilentlyContinue
+```
+The script (`model.py`) also clears these caches automatically at start‑up.
+
+### 5. Run the Model
+Execute the script with a ticker symbol as an argument. If no argument is supplied, it defaults to **NVDA**.
+```powershell
+python model.py NVDA
+```
+You will see a nicely formatted leaderboard printed to the console, followed by classification results.
+
+### 6. Understanding the Output
+- **BEST OVERALL MODEL** – The regression model with the highest R² score.
+- **BEST CLASSIFIER** – The classification model with the highest accuracy.
+- **Prediction Details** – Current price, predicted price, price difference, RSI, MACD, and suggested trading action.
+- **Chart Data** – The script also prepares data for a 30‑day price chart (labels, close prices, EMA, Bollinger bands). This data can be consumed by a front‑end UI.
+
+### 7. Using the Results in the Web UI
+The project includes HTML templates (e.g., `templates/watchlist.html`). To serve the UI, you can run a lightweight Flask server (if configured) or integrate the JSON output into your existing front‑end.
+
+### 8. Common Issues & Fixes
+- **Missing `model_used` column** – Ensure the latest migration has been applied. The script creates the column automatically on first run.
+- **yfinance rate‑limit** – If you hit the API limit, wait a few minutes before re‑running.
+- **Import errors** – Verify that all packages from `requirements.txt` installed correctly. Re‑run `pip install -r requirements.txt` if needed.
+
+### 9. Running in Fast Mode (Optional)
+For quicker debugging, add the `--fast` flag inside the script (set `fast_mode=True` in `fetch_and_train`). This reduces the data period to 1‑year and skips back‑testing.
+
+---
+**Enjoy experimenting with PredictPro!**

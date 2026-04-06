@@ -161,6 +161,28 @@
                     </div>
                 </div>
                 
+                <!-- NEW: Pro Trading Levels Widget -->
+                <div class="widget glass-widget span-two" id="levelsWidget" style="display: none;">
+                    <div class="widget-title" style="display: flex; justify-content: space-between;">
+                        <span>Pro Trading Levels (Pivot Points)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-blue);"><i class="fa-solid fa-layer-group"></i> Daily Targets</span>
+                    </div>
+                    <div class="grid-header" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; display: grid;">
+                        <span>Support 2 (S2)</span>
+                        <span>Support 1 (S1)</span>
+                        <span>Pivot Point</span>
+                        <span>Resistance 1 (R1)</span>
+                        <span>Resistance 2 (R2)</span>
+                    </div>
+                    <div class="grid-row" style="padding: 10px 24px; font-size: 1.05rem; font-weight: 700; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; display: grid;">
+                        <span id="lvlS2" style="color: var(--danger);">$0.00</span>
+                        <span id="lvlS1" style="color: var(--danger); opacity: 0.8;">$0.00</span>
+                        <span id="lvlPivot" style="color: var(--text-primary);">$0.00</span>
+                        <span id="lvlR1" style="color: var(--success); opacity: 0.8;">$0.00</span>
+                        <span id="lvlR2" style="color: var(--success);">$0.00</span>
+                    </div>
+                </div>
+                
                 <!-- NEW: Backtesting Engine Summary -->
                 <div class="widget glass-widget span-two" id="backtestWidget" style="display: none;">
                     <div class="widget-title" style="display: flex; justify-content: space-between;">
@@ -337,6 +359,16 @@
                 div.innerHTML = `<span style="font-weight:600; font-size: 0.8rem; width: 100px;">${name}:</span> <span style="font-weight:700; ${col}">${sig}</span>`;
                 factorsContainer.appendChild(div);
             });
+            
+            // Pro Trading Levels (Pivot)
+            if (res.pivot) {
+                document.getElementById('levelsWidget').style.display = 'block';
+                document.getElementById('lvlS2').innerText = `${res.currency}${res.s2.toFixed(2)}`;
+                document.getElementById('lvlS1').innerText = `${res.currency}${res.s1.toFixed(2)}`;
+                document.getElementById('lvlPivot').innerText = `${res.currency}${res.pivot.toFixed(2)}`;
+                document.getElementById('lvlR1').innerText = `${res.currency}${res.r1.toFixed(2)}`;
+                document.getElementById('lvlR2').innerText = `${res.currency}${res.r2.toFixed(2)}`;
+            }
 
             // Backtest UI
             if (res.backtest) {

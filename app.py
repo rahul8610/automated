@@ -5,8 +5,22 @@ import os
 import mimetypes
 mimetypes.add_type('text/css', '.css')
 
+import numpy as np
+from flask.json.provider import DefaultJSONProvider
+
 app = Flask(__name__)
 
+class CustomJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
+
+app.json = CustomJSONProvider(app)
 # Ensure templates and static directories exist
 app.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app.static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')

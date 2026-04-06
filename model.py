@@ -177,6 +177,12 @@ def fetch_and_train(ticker, fast_mode=False, capital=100000.0, period="5y"):
         for idx in ['GSPC', 'DJI', 'IXIC', 'RUT', 'VIX']:
             if f'{idx}_Return' in df_clean.columns:
                 features_clf.extend([f'{idx}_Return', f'{idx}_EMA_20_Dist'])
+                
+        # Ensure absolutely no NaNs remain in features (e.g. from missing live volume or partial macro data)
+        df_clean[features] = df_clean[features].ffill().fillna(0)
+        df_clean[features_clf] = df_clean[features_clf].ffill().fillna(0)
+        df[features] = df[features].ffill().fillna(0)
+        df[features_clf] = df[features_clf].ffill().fillna(0)
         
         X = df_clean[features]
         X_clf_df = df_clean[features_clf]
@@ -304,8 +310,28 @@ def fetch_and_train(ticker, fast_mode=False, capital=100000.0, period="5y"):
             print(f"\nBest Models successfully trained and saved to cache!\n")
 
         # 4. Generate Final Prediction
+        latest_data = latest_data.ffill().bfill()
         latest_X = latest_data[features].iloc[-1:]
         current_price = latest_data['Close'].iloc[-1]
+        
+        # Fetch Real-Time Accurate Live Price
+        try:
+            live_price = stock.fast_info.last_price
+            if live_price and not np.isnan(live_price) and live_price > 0:
+                current_price = live_price
+        except:
+            pass
+            
+        # Pro Trading Levels (Standard Pivot Points based on latest candle)
+        last_high = latest_data['High'].iloc[-1]
+        last_low = latest_data['Low'].iloc[-1]
+        last_close = latest_data['Close'].iloc[-1]
+        
+        pivot = (last_high + last_low + last_close) / 3
+        r1 = (2 * pivot) - last_low
+        s1 = (2 * pivot) - last_high
+        r2 = pivot + (last_high - last_low)
+        s2 = pivot - (last_high - last_low)
         
         latest_X_clf = latest_data[features_clf].iloc[-1:]
         
@@ -390,12 +416,17 @@ def fetch_and_train(ticker, fast_mode=False, capital=100000.0, period="5y"):
             "ticker": ticker,
             "company_name": stock.info.get('longName', ticker),
             "currency": currency_sym,
-            "current_price": round(current_price, 2),
+            "current_price": round(float(current_price), 2),
             "predicted_price": round(float(prediction), 2),
             "price_diff": round(float(prediction - current_price), 2),
             "price_diff_pct": round(float(((prediction - current_price) / current_price) * 100), 2),
             "rsi": round(float(current_rsi), 2),
             "macd": round(float(current_macd), 4),
+            "pivot": round(float(pivot), 2),
+            "r1": round(float(r1), 2),
+            "r2": round(float(r2), 2),
+            "s1": round(float(s1), 2),
+            "s2": round(float(s2), 2),
             "suggestion": suggestion,
             "confidence": confidence,
             "reasons": suggestion_reasons,
